@@ -9,9 +9,9 @@ if os.name == 'nt':  # Windows
     AudioSegment.ffmpeg = r"/mnt/c/ffmpeg/bin/ffmpeg.exe"
     AudioSegment.ffprobe = r"/mnt/c/ffmpeg/bin/ffprobe.exe"
 else:  # Linux/Unix
-    AudioSegment.converter = "/usr/bin/ffmpeg"
-    AudioSegment.ffmpeg = "/usr/bin/ffmpeg"
-    AudioSegment.ffprobe = "/usr/bin/ffprobe"
+    AudioSegment.converter = "/usr/local/bin/ffmpeg"
+    AudioSegment.ffmpeg = "/usr/local/bin/ffmpeg"
+    AudioSegment.ffprobe = "/usr/local/bin/ffprobe"
 
 def convert_to_wav(input_path, output_path):
     """Convert audio file to WAV format"""

@@ -1,9 +1,12 @@
+import torch
 import yt_dlp
 import subprocess
 import os
 import json
+
 import audiotranslate
 from datetime import datetime
+from transformers import pipeline
 
 def extract_audio_from_stream_old(url, output_dir="downloads"):
     """
@@ -129,7 +132,7 @@ def extract_audio_from_stream(url, output_dir="downloads"):
 
     
         # Try to find FFmpeg automatically
-    ffmpeg_path = "/mnt/c/ffmpeg/bin/ffmpeg.exe" 
+    ffmpeg_path = "/usr/local/bin/ffmpeg"
     
         # Add FFmpeg location if provided
     if ffmpeg_path:
@@ -189,7 +192,27 @@ def main():
     result = extract_audio_from_stream(url, output_dir)
     
     if result:
-        audiotranslate.transcribe_kannada_audio(result)
+        # Check file size to determine which method to use
+        # file_size = os.path.getsize(result)
+        #
+        # if file_size > 10 * 1024 * 1024:  # If file is larger than 10MB
+        #     print("Large audio file detected, using chunked processing...")
+        #     text = audiotranslate.transcribe_long_kannada_audio(result)
+        # else:
+        #     text = audiotranslate.transcribe_kannada_audio(result)
+        device = "cuda:0" if torch.cuda.is_available() else "cpu"
+
+        transcribe = pipeline(task="automatic-speech-recognition", model="vasista22/whisper-kannada-medium",
+                              chunk_length_s=30, device=device)
+        transcribe.model.config.forced_decoder_ids = transcribe.tokenizer.get_decoder_prompt_ids(language="kn",
+                                                                                                 task="transcribe")
+
+        text = transcribe(result)["text"]
+        if text:
+            print("\nTranscribed text:")
+            print(text)
+        else:
+            print("\nTranscription failed!")
         print(f"\nExtraction completed successfully!")
     else:
         print("\nExtraction failed!")
